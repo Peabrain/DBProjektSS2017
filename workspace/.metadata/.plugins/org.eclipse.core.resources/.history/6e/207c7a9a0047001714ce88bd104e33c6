@@ -1,0 +1,4 @@
+
+public class hashtag {
+	public int haeufigkeit;
+}

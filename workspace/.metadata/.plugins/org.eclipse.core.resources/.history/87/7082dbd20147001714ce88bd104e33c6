@@ -1,0 +1,8 @@
+
+public class hashtag {
+	public int haeufigkeit;
+	public hashtag(int haeufigkeit)
+	{
+		this.haeufigkeit = haeufigkeit;
+	}
+}

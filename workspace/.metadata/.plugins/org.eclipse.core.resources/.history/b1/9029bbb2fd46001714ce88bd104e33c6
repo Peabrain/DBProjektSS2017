@@ -1,0 +1,9 @@
+
+public class tweet {
+	public int id = 0;
+	public String handle = null;
+	public String text = null;
+	public int anz_retweet = 0;
+	public int anz_likes = 0;
+	public String org_autor = null;
+}

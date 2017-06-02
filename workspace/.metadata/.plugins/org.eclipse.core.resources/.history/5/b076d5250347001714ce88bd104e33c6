@@ -1,0 +1,11 @@
+import java.util.ArrayList;
+import java.util.List;
+
+public class hashtag {
+	public int haeufigkeit;
+	public List<Integer> tweet = new ArrayList();
+	public hashtag(int haeufigkeit)
+	{
+		this.haeufigkeit = haeufigkeit;
+	}
+}
