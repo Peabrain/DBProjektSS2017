@@ -1,8 +1,0 @@
-
-public class time {
-	public String timestamp;
-	public time(String timestamp)
-	{
-		this.timestamp = timestamp;
-	}
-}
