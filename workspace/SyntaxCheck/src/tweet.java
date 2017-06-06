@@ -1,3 +1,6 @@
+//
+// Klasse enthält Daten zum Tweet
+//
 
 public class tweet {
 	public String handle = null;

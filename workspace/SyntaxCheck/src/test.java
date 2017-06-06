@@ -21,29 +21,22 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 public class test {
-	// JDBC driver name and database URL
-	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
-	static final String DB_URL = "jdbc:mysql://localhost:5432/Election";
-	
-	//  Database credentials
-	static final String USER = "testuser";
-	static final String PASS = "testpass";
-
 	static public void main(String[] arg) throws IOException
 	{		
+		// Globale Daten zur Verbindung zum SQL-Server
 		String url = "jdbc:postgresql://localhost:5432/Election";
 		Properties props = new Properties();
 		props.setProperty("user","testuser");
 		props.setProperty("password","testpass");
-//		props.setProperty("ssl","false");
 		Connection conn = null;
 		PreparedStatement pst = null;
 		
-		HashMap<Integer,tweet> tweets = new HashMap(); 
-		HashMap<String,hashtag> hashtagcount = new HashMap();
-		HashMap<String,time> timestam = new HashMap();
-		HashMap<String,erscheintzsmmit> erscheintzsmmitMap = new HashMap();
-		
+		HashMap<Integer,tweet> tweets = new HashMap(); 			// HashMap<[int] TweetID,[class] tweet>
+		HashMap<String,hashtag> hashtagcount = new HashMap();	// HashMap<[String] Hashtag,[class] hashtag>
+		HashMap<String,time> timestam = new HashMap();			// HashMap<[String] Timestamp, [class] time>				
+		HashMap<String,erscheintzsmmit> erscheintzsmmitMap = new HashMap();	// HashMap<[String] Timestamp, [class] erscheintzsmmit>
+
+		// Laden der Datenbanktreiber
 		try 
 		{
 			Class.forName("org.postgresql.Driver");
@@ -55,17 +48,18 @@ public class test {
 		}
 		finally
 		{
+			// Verbindung zum Server etablieren
 			try 
 			{
 				conn = DriverManager.getConnection(url, props);
 			} 
 			catch (SQLException e) 
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}	
 			finally
 			{
+				// Löschen der Datenbank
 				String stm1 = "DELETE FROM genutztam;DELETE FROM getweetetam;DELETE FROM kommtvorin;DELETE FROM erscheintzsmmit;DELETE FROM tweet;DELETE FROM hashtag;DELETE FROM time";
 				try
 				{
@@ -77,22 +71,23 @@ public class test {
 		            e.printStackTrace();
 		        }
 				
-				
+
+				// Laden und formatieren der 'american-election-tweets.xlsx'-Datei
 				Pattern p = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
 				InputStream ExcelFileToRead = new FileInputStream("american-election-tweets.xlsx");
 				XSSFWorkbook  wb = new XSSFWorkbook(ExcelFileToRead);
-				
 				XSSFWorkbook test = new XSSFWorkbook(); 
-				
 				XSSFSheet sheet = wb.getSheetAt(0);
 				XSSFRow row; 
 				XSSFCell cell;
 
+				// Holen den Zeilen-Iterators
 				Iterator rows = sheet.rowIterator();
 
 				int zeile = 1;
 				while (rows.hasNext())
 				{
+					// Bearbeiten der n.Zeile
 					String handle = null;
 					String text = null;
 					int anz_retweet = 0;
@@ -100,23 +95,30 @@ public class test {
 					String org_autor = null;
 					String timestamp = null;
 
-					System.out.print(zeile + " : ");
+					System.out.print("Bearbeite Zeile " + zeile);
 					row=(XSSFRow) rows.next();
 					Iterator cells = row.cellIterator();
 					int Fehler = 0;
+					// Solange, wie kein Fehler in der Zeile ist, wird die Zeile abgearbeitet
 					while (cells.hasNext() && Fehler == 0)
 					{
+						// Bearbeite Spalte
 						cell=(XSSFCell) cells.next();
 						int Spalte = cell.getColumnIndex();
+						// Abfrage des Datentyps
 						if (cell.getCellType() == XSSFCell.CELL_TYPE_STRING)
 						{
+							// String-Datentyp
 							String olds = cell.getStringCellValue();
+							// Umwandlung des Strings mit neuen Zeichen, wie Umlaute und Sonderzeichen
 							String news = replaceUmlaute(olds);
 							char[] ascii1 = news.toCharArray();
 							news = "";
 							for(int i: ascii1) news += Character.toString((char)i);
+							// Nur bearbeiten, wenn es nicht die 1.Zeile ist
 							if(zeile > 1)
 							{
+								// Für die Zeile temporäre Variablen für die Klassen füllen
 								switch(Spalte)
 								{
 								case 0:
@@ -148,9 +150,11 @@ public class test {
 						}
 						else if(cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC)
 						{
+							// Nummerischer-Datentyp gilt nur für Spalte 7 und 8
 							if(Spalte != 7 && Spalte != 8) Fehler++;
 							else
 							{
+								// Für die Zeile temporäre Variablen für die Klassen füllen
 								if(Spalte == 7)
 									anz_retweet = (int)cell.getNumericCellValue();
 								else
@@ -166,6 +170,7 @@ public class test {
 					}
 					if(Fehler == 0 && zeile > 1)
 					{
+						// Wenn kein Fehler in der Zeile vorliegt, dann erstelle einen neuen Tweet in der Liste
 						tweets.put(zeile, new tweet(handle,text,anz_retweet,anz_likes,org_autor,timestamp));
 					}
 					zeile++;
@@ -173,11 +178,13 @@ public class test {
 				}
 			}
 		}
+		// Weiterverarbeitung der Tweet-Liste
 		for(Map.Entry<Integer, tweet> entry : tweets.entrySet())
 		{
 			int tweetid = entry.getKey();
 			try
 			{
+				// Erstelle eine SQL-Anfrage
 				String stm = "INSERT INTO tweet(tweetid, handle, Text, anzlikes, anzretweets, originalautor) VALUES(?, ?, ?, ?, ?, ?)";
 				tweet t = entry.getValue();
 	            pst = conn.prepareStatement(stm);
@@ -189,22 +196,32 @@ public class test {
 	            pst.setString(6, t.org_autor);                    
 	            pst.executeUpdate();
 	            
+	            // Wenn der Timestamp noch nicht vorhanden ist,
+	            // erstelle den Timestamp in HashMap time
 	            time ti = null;
 	            if(timestam.containsKey(t.timestamp) == false)
 	            	timestam.put(t.timestamp,new time());
             	ti = timestam.get(t.timestamp);
+            	// Füge die aktuelle TweetID dem Timestamp hinzu
             	ti.getweetedam.add(tweetid);
-            	
+
+            	// Hole alle Hashtag's, im Text des aktuellen Tweet's
 				List<String> hashtags = findHashtags(t.text);
+				// Verarbeite alle Hashtags
 				for(String s: hashtags)
 				{
+					// Wenn der aktuelle Hashtag noch nicht existiert,
 					if(hashtagcount.containsKey(s) == false)
 					{
+						// dann erstelle den Hashtag in der hashtagcount-Map
+						// und füge die TweetID dem Hashtag hinzu
 						hashtagcount.put(s, new hashtag(1,tweetid));
 		            	ti.genutztam.add(s);
 					}
 					else
 					{
+						// ansonsten, hole den Hashtag und inkrementiere die Häufigkeit
+						// und füge die TweetID dem Hashtag hinzu
 						hashtag h = hashtagcount.get(s);
 						h.haeufigkeit++;
 						h.tweet.add(entry.getKey());
@@ -212,6 +229,9 @@ public class test {
 							ti.genutztam.add(s);
 					}
 				}
+				// Gehe alle Kombinationen der  Hashtags durch 
+				// und überprüfe, ob die Kombinationen vorhanden sind
+				// und wenn ja, dann zähle die Häufigkeit
 				for(int hs1 = 0;hs1 < hashtags.size() - 1;hs1++)
 				{
 					String hss1 = hashtags.get(hs1);
@@ -238,6 +258,7 @@ public class test {
 	        }
 		}
 	
+		// Erstelle den SQL-Tabelle der Hashtags auf dem SQL-Server
 		for(Map.Entry<String, hashtag> entry : hashtagcount.entrySet())
 		{
 			String name = entry.getKey();
@@ -256,6 +277,8 @@ public class test {
 	            e.printStackTrace();
 	        }
 
+			// Füge zur Relation kommtvorin den aktuellen Hashtag und allen 
+			// dazugehörigen Tweets hinzu
 			for(int l: t.tweet)
 			{
 				String stm1 = "INSERT INTO kommtvorin(name, tweetid) VALUES(?, ?)";
@@ -272,6 +295,7 @@ public class test {
 		        }
 			}
 		}
+		// Fülle die SQL-Tabelle time in der Datenbank
 		for(Map.Entry<String,time> entry : timestam.entrySet())
 		{
         	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -287,6 +311,7 @@ public class test {
 	            pst.executeUpdate();
 	            
 	            time ti = entry.getValue();
+	            // Füge alle TweetID's mit aktuellem Timestamp in die getweetetam-Relation ein
 	            for(int i : ti.getweetedam)
 	            {
 	    			try 
@@ -302,6 +327,7 @@ public class test {
 	    	            e.printStackTrace();
 	    	        }
 	            }
+	            // Füge alle TweetID's mit aktuellem Timestamp in die genutztam-Relation ein
 	            for(String i : ti.genutztam)
 	            {
 	    			try 
@@ -328,6 +354,7 @@ public class test {
 	            e.printStackTrace();
 	        }
 		}
+		// Erstelle die SQL-Tabelle zur Relation erscheintzsmmit in der Datenbank
 		for(Map.Entry<String, erscheintzsmmit> entry : erscheintzsmmitMap.entrySet())
 		{
 			try 
@@ -345,6 +372,7 @@ public class test {
 	        }
 		}
 	}
+	// Tabelle zur Ersetzung von Umlauten und Sonderzeichen 
 	private static String[][] UMLAUT_REPLACEMENTS = 
 	{ 
 		{ new String("Ä"), "Ae" }, 
@@ -371,6 +399,9 @@ public class test {
 		{ new String("•"), "*" },
 		{ new String("❤"), "<3" },
 	};
+	// Ersetze alle Umlaute und Sonderzeichen
+	// Input: String
+	// Output: neuer String
 	public static String replaceUmlaute(String orig) 
 	{
 	    String result = orig;
@@ -384,6 +415,9 @@ public class test {
 
 	    return resultnew;
 	}
+	// Finde alle Hashtag-Strings
+	// Input: Text
+	// Output: Liste von Hashtags
 	static List<String> findHashtags(String s)
 	{
 		List<String> hashtags = new ArrayList<String>();
