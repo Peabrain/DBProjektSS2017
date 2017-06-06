@@ -178,7 +178,7 @@ public class test {
 				}
 			}
 		}
-		// Weiterverarbeitung der Tweet-Liste
+		// Weiterverarbeitung der Tweet-Liste in SQL-Tweet-Tabelle
 		for(Map.Entry<Integer, tweet> entry : tweets.entrySet())
 		{
 			int tweetid = entry.getKey();
@@ -277,7 +277,7 @@ public class test {
 	            e.printStackTrace();
 	        }
 
-			// Füge zur Relation kommtvorin den aktuellen Hashtag und allen 
+			// Füge zur Relation 'kommtvorin' den aktuellen Hashtag und allen 
 			// dazugehörigen Tweets hinzu
 			for(int l: t.tweet)
 			{
