@@ -18,11 +18,36 @@
     exit;
   }
 
+  $init = 0;
   while ($row = pg_fetch_row($result)) 
   {
 //    echo "Count: $row[0]  Date: $row[1]";
+    $t1 = strtotime($row[1]);
+    if($init == 0)
+    {
+      $t2 = strtotime("2016-01-04");  
+      $init = 1;
+    }
+    else
+      $t2 = $last_date;
+
+    $te = $t1 - $t2;
+    $te = floor($te / (60 * 60 * 24));
+    if($te > 1)
+    {
+      $t3 = $t2;
+      for($i = 1;$i < $te;$i++)
+      {
+        $t3 += (60 * 60 * 24);
+        $tp = Date("Y-m-d",$t3);
+        $counts[] = 0;
+        $dates[] = $tp;
+      }
+    }
+
     $counts[] = $row[0];
     $dates[] = $row[1];
+    $last_date = $t1;
 //    echo "<br />\n";
   }
 
