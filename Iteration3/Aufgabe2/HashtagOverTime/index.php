@@ -3,14 +3,18 @@
 <!-- Andreas Timmermann -->
 <!-- Alena Dudarenok -->
 <?php 
-  $Hashtag = $_POST["Hashtag"];
-//  echo $Hashtag;
-//  echo "<br />\n";
-  $counts = array();
-  $dates = array();
-  $countsSpecial = array();
-  $datesSpecial = array();
+  $Hashtag = $_POST["Hashtag"];   // Hashtag der im unteren Diagramm dargestellt werden soll
+
+  $counts = array();              // Liste Anzahl der Hashtags pro Tag
+  $dates = array();               // Liste der Daten
+  $countsSpecial = array();       // Liste der Anzahl des ausgewählten Hashtags pro Tag
+  $datesSpecial = array();        // Liste der Daten
+
+  // Verbindung zum Server herstellen
   $dbconn = pg_connect("host=localhost port=5432 dbname=Election user=postgres password=postgres");
+
+  // Abfrage aller Hashtags in der über den gesamten Zeitraum der in der Datenbank vorhanden ist
+  // Rückgabe ist eine Liste mit Daten und Anzahl aller Hashtags
   $result = pg_query($dbconn, "SELECT count(timestamp::TIMESTAMP::DATE),timestamp::TIMESTAMP::DATE FROM genutztam GROUP BY timestamp::TIMESTAMP::DATE ORDER BY timestamp::TIMESTAMP::DATE ASC");
   if (!$result) 
   {
@@ -18,10 +22,11 @@
     exit;
   }
 
+  // Abarbeitung aller Ergebnisse
   $init = 0;
   while ($row = pg_fetch_row($result)) 
   {
-//    echo "Count: $row[0]  Date: $row[1]";
+    // Letztes bearbeitetes Datum wird bei der Initialisierung auf 04.01.2016 gesetzt 
     $t1 = strtotime($row[1]);
     if($init == 0)
     {
@@ -31,6 +36,7 @@
     else
       $t2 = $last_date;
 
+    // Auffüllen der Tabelle vom letzten bearbeiteten Datum bis zum aktuellen Datum mit 0 Hashtagcounts 
     $te = $t1 - $t2;
     $te = floor($te / (60 * 60 * 24));
     if($te > 1)
@@ -44,13 +50,13 @@
         $dates[] = $tp;
       }
     }
-
+    // Dann wird der aktuelle Eintrag in die Tabellen eingetragen
     $counts[] = $row[0];
     $dates[] = $row[1];
     $last_date = $t1;
-//    echo "<br />\n";
   }
 
+  // Serveranfrage für den ausgewählten Hashtag.
   $result = pg_query($dbconn, "SELECT count(timestamp::TIMESTAMP::DATE),timestamp::TIMESTAMP::DATE FROM genutztam WHERE name='$Hashtag' GROUP BY timestamp::TIMESTAMP::DATE ORDER BY timestamp::TIMESTAMP::DATE ASC");
   if (!$result) 
   {
@@ -58,6 +64,7 @@
     exit;
   }
 
+  // Gleiches Spiel wie Oben
   $init = 0;
   while ($row = pg_fetch_row($result)) 
   {
@@ -80,19 +87,14 @@
         $tp = Date("Y-m-d",$t3);
         $countsSpecial[] = 0;
         $datesSpecial[] = $tp;
-//        echo "Count: 0  Date: $tp";
-//        echo "<br />\n";
       }
     }
     $ts = Date("Y-m-d",$t1);
-//    echo "Count: $row[0]  Date: $ts";
     $countsSpecial[] = $row[0];
     $datesSpecial[] = $ts;
     $last_date = $t1;
-//    $counts[] = $row[0];
-//    $dates[] = $row[1];
-//  echo "<br />\n";
   }
+  // Auffüllen der Hashtaganzahl bis zum 28.09.2016 mit Hashtagcount 0
   $t1 = strtotime("2016-09-28");
   $t2 = $last_date;
   $te = $t1 - $t2;
@@ -106,8 +108,6 @@
       $tp = Date("Y-m-d",$t3);
       $countsSpecial[] = 0;
       $datesSpecial[] = $tp;
-//      echo "Count: 0  Date: $tp";
-//      echo "<br />\n";
     }
   }
 ?>
@@ -121,69 +121,69 @@
   <script language="javascript" type="text/javascript" src="./libs/jquery.flot.js"></script>
   <script language="javascript" type="text/javascript" src="./libs/jquery.flot.categories.js"></script>
   <script type="text/javascript">
-  $(function() {
-
-    
+  $(function() 
+  {        
     var data = [];
-    /* = [["02.01.17",2330417],["03.01.17",882614],["04.01.17",449615],["05.01.17",746100],
-                ["06.01.17",700163],["09.01.17",1297576],["10.01.17",1691504],["11.01.17",1521071],
-                ["12.01.17",1073743],["13.01.17",1149538],["16.01.17",861942],["17.01.17",848050],
-                ["18.01.17",528968],["19.01.17",778900],["20.01.17",610841],["23.01.17",366744],
-                ["24.01.17",734456],["25.01.17",1221101],["26.01.17",1302214],["27.01.17",739897],
-                ["30.01.17",1268146],["31.01.17",988174]];
-*/
-      var y = $.parseJSON('<?php echo json_encode($counts); ?>');
-      var d = $.parseJSON('<?php echo json_encode($dates); ?>');
-      $i = 0;
-      for(i = 0;i < y.length;i++)
+    // Holen der Tagen vom PHP Script
+    var y = $.parseJSON('<?php echo json_encode($counts); ?>');
+    var d = $.parseJSON('<?php echo json_encode($dates); ?>');
+    $i = 0;
+    // Tabelle auffüllen und Plotten
+    for(i = 0;i < y.length;i++)
+    {
+      var t = [];
+      t.push(d[i]);
+      t.push(y[i]);
+      data.push(t);
+    }
+    $.plot("#barchart", [ data ], 
+    {
+      series: 
       {
-        var t = [];
-        t.push(d[i]);
-        t.push(y[i]);
-        data.push(t);//daten;
-//        console.log(t[0] + " , " + t[1]);
-      }
-    $.plot("#barchart", [ data ], {
-      series: {
-        bars: {
+        bars: 
+        {
           show: true,
           barWidth: 0.1,
           align: "center"
         }
       },
-      xaxis: {
-          show: false,
+      xaxis: 
+      {
+        show: false,
         mode: "categories",
         tickLength: 0
-//        ticks: 10
       }
     });    
 
     var dataS = [];
-      var yS = $.parseJSON('<?php echo json_encode($countsSpecial); ?>');
-      var dS = $.parseJSON('<?php echo json_encode($datesSpecial); ?>');
-      $i = 0;
-      for(i = 0;i < yS.length;i++)
+    // Holen der Tagen vom PHP Script
+    var yS = $.parseJSON('<?php echo json_encode($countsSpecial); ?>');
+    var dS = $.parseJSON('<?php echo json_encode($datesSpecial); ?>');
+    $i = 0;
+    // Tabelle auffüllen und Plotten
+    for(i = 0;i < yS.length;i++)
+    {
+      var t = [];
+      t.push(dS[i]);
+      t.push(yS[i]);
+      dataS.push(t);//daten;
+    }
+    $.plot("#barchartSpecial", [ dataS ], 
+    {
+      series: 
       {
-        var t = [];
-        t.push(dS[i]);
-        t.push(yS[i]);
-        dataS.push(t);//daten;
-//        console.log(t[0] + " , " + t[1]);
-      }
-    $.plot("#barchartSpecial", [ dataS ], {
-      series: {
-        bars: {
+        bars: 
+        {
           show: true,
           barWidth: 0.1,
           align: "center"
         }
       },
-      xaxis: {
-          show: false,
+      xaxis: 
+      {
+        show: false,
         mode: "categories",
         tickLength: 0
-//        ticks: 10
       }
     });    
 
