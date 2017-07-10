@@ -115,7 +115,7 @@
 <html>
   <head>
   <meta charset="utf-8"></meta>
-  <title>Apple Aktie</title>
+  <title>Datenbank Projekt SS2017</title>
   <link href="my.css" rel="stylesheet" type="text/css">
   <script language="javascript" type="text/javascript" src="./libs/jquery.js"></script>
   <script language="javascript" type="text/javascript" src="./libs/jquery.flot.js"></script>
