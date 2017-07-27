@@ -38,11 +38,11 @@ public class HashtagNetzwerk {
     allNodes.put(makeNode(name, x, y, color));
   }
   
-  public void addCluster(List<Point> points,String color){
+  public void addCluster(List<Point1> points,String color){
     System.out.println("Adding cluster");
     int newX;
     int newY;
-    for(Point p:points){
+    for(Point1 p:points){
       newX=Integer.valueOf((int)p.getX());
       newY=Integer.valueOf((int)p.getY());
       allNodes.put(makeNode(p.Myname, newX, newY, color));

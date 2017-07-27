@@ -14,18 +14,18 @@ import java.util.List;
 public class KMeans {
  
 	//Number of Clusters. This metric should be related to the number of points
-    private int NUM_CLUSTERS = 2;    
+    public int NUM_CLUSTERS = 7;    
     //Number of Points
     private int NUM_POINTS = 15;
     //Min and Max X and Y
     private static final int MIN_COORDINATE = 0;
     private static final int MAX_COORDINATE = 25;
     
-    private List<Point> points;
+    private List<Point1> points;
     private List<Cluster> clusters;
     
     public KMeans() {
-    	this.points = new ArrayList<Point>();
+    	this.points = new ArrayList<Point1>();
     	this.clusters = new ArrayList<Cluster>();    	
     }
     /*
@@ -39,13 +39,13 @@ public class KMeans {
     //Initializes the process
     public void init() {
     	//Create Points
-    	points = Point.createRandomPoints(MIN_COORDINATE,MAX_COORDINATE,NUM_POINTS);
+    	points = Point1.createRandomPoints(MIN_COORDINATE,MAX_COORDINATE,NUM_POINTS);
     	
     	//Create Clusters
     	//Set Random Centroids
     	for (int i = 0; i < NUM_CLUSTERS; i++) {
     		Cluster cluster = new Cluster(i);
-    		Point centroid = Point.createRandomPoint(MIN_COORDINATE,MAX_COORDINATE);
+    		Point1 centroid = Point1.createRandomPoint(MIN_COORDINATE,MAX_COORDINATE);
     		cluster.setCentroid(centroid);
     		clusters.add(cluster);
     	}
@@ -54,14 +54,14 @@ public class KMeans {
     	plotClusters();
     }
     //Unser Zusazt///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public void init(List<Point> startingPoints){
+    public void init(List<Point1> startingPoints){
     	points=startingPoints;
     	NUM_POINTS=points.size();
     	//Create Clusters
     	//Set Random Centroids
     	for (int i = 0; i < NUM_CLUSTERS; i++) {
     		Cluster cluster = new Cluster(i);
-    		Point centroid = Point.createRandomPoint(MIN_COORDINATE,MAX_COORDINATE);
+    		Point1 centroid = Point1.createRandomPoint(MIN_COORDINATE,MAX_COORDINATE);
     		cluster.setCentroid(centroid);
     		clusters.add(cluster);
     	}
@@ -70,12 +70,12 @@ public class KMeans {
     	plotClusters();
     }
     public void printCentroids(){
-    	List<Point> printList=getCentroids();
+/*    	List<Point> printList=getCentroids();
     	System.out.println("Centroids:");
     	for(Point p:printList){
     		System.out.println("("+p.getX()+", "+p.getY()+")");
     	}
-    }
+*/    }
     public List<Cluster> getClusters(){
     	return clusters;
     }
@@ -99,7 +99,7 @@ public class KMeans {
         	//Clear cluster state
         	clearClusters();
         	
-        	List<Point> lastCentroids = getCentroids();
+        	List<Point1> lastCentroids = getCentroids();
         	
         	//Assign points to the closer cluster
         	assignCluster();
@@ -109,17 +109,17 @@ public class KMeans {
         	
         	iteration++;
         	
-        	List<Point> currentCentroids = getCentroids();
+        	List<Point1> currentCentroids = getCentroids();
         	
         	//Calculates total distance between new and old Centroids
         	double distance = 0;
         	for(int i = 0; i < lastCentroids.size(); i++) {
-        		distance += Point.distance(lastCentroids.get(i),currentCentroids.get(i));
+        		distance += Point1.distance(lastCentroids.get(i),currentCentroids.get(i));
         	}
-        	System.out.println("#################");
+/*        	System.out.println("#################");
         	System.out.println("Iteration: " + iteration);
         	System.out.println("Centroid distances: " + distance);
-        	plotClusters();
+*/        	plotClusters();
         	        	
         	if(distance == 0) {
         		finish = true;
@@ -136,11 +136,11 @@ public class KMeans {
     	}
     }
     
-    List<Point> getCentroids() {
-    	List<Point> centroids = new ArrayList<Point>(NUM_CLUSTERS);
+    List<Point1> getCentroids() {
+    	List<Point1> centroids = new ArrayList<Point1>(NUM_CLUSTERS);
     	for(Cluster cluster : clusters) {
-    		Point aux = cluster.getCentroid();
-    		Point point = new Point(aux.getX(),aux.getY(),"Cluster center");
+    		Point1 aux = cluster.getCentroid();
+    		Point1 point = new Point1(aux.getX(),aux.getY(),"Cluster center");
     		centroids.add(point);
     	}
     	return centroids;
@@ -152,11 +152,11 @@ public class KMeans {
         int cluster = 0;                 
         double distance = 0.0; 
         
-        for(Point point : points) {
+        for(Point1 point : points) {
         	min = max;
             for(int i = 0; i < NUM_CLUSTERS; i++) {
             	Cluster c = clusters.get(i);
-                distance = Point.distance(point, c.getCentroid());
+                distance = Point1.distance(point, c.getCentroid());
                 if(distance < min){
                     min = distance;
                     cluster = i;
@@ -171,15 +171,15 @@ public class KMeans {
         for(Cluster cluster : clusters) {
             double sumX = 0;
             double sumY = 0;
-            List<Point> list = cluster.getPoints();
+            List<Point1> list = cluster.getPoints();
             int n_points = list.size();
             
-            for(Point point : list) {
+            for(Point1 point : list) {
             	sumX += point.getX();
                 sumY += point.getY();
             }
             
-            Point centroid = cluster.getCentroid();
+            Point1 centroid = cluster.getCentroid();
             if(n_points > 0) {
             	double newX = sumX / n_points;
             	double newY = sumY / n_points;

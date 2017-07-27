@@ -12,8 +12,8 @@ import java.util.List;
 
 public class Cluster {
 	
-	public List<Point> points;
-	public Point centroid;
+	public List<Point1> points;
+	public Point1 centroid;
 	public int id;
 	
 	//Creates a new Cluster
@@ -27,7 +27,7 @@ public class Cluster {
 		return points;
 	}
 	
-	public void addPoint(Point point) {
+	public void addPoint(Point1 point) {
 		points.add(point);
 	}
 
@@ -35,11 +35,11 @@ public class Cluster {
 		this.points = points;
 	}
 
-	public Point getCentroid() {
+	public Point1 getCentroid() {
 		return centroid;
 	}
 
-	public void setCentroid(Point centroid) {
+	public void setCentroid(Point1 centroid) {
 		this.centroid = centroid;
 	}
 
@@ -52,13 +52,14 @@ public class Cluster {
 	}
 	
 	public void plotCluster() {
-		System.out.println("[Cluster: " + id+"]");
+/*		System.out.println("[Cluster: " + id+"]");
 		System.out.println("[Centroid: " + centroid + "]");
 		System.out.println("[Points: \n");
 		for(Point p : points) {
 			System.out.println(p);
 		}
 		System.out.println("]");
+	*/
 	}
 
 
